@@ -1,4 +1,4 @@
-# Card Nexus - Trading Card Game API
+# CN test
 
 ## Project Overview
 
