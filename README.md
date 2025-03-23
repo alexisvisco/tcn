@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-The system provides a flexible architecture for unified card queries across different game systems, advanced filtering capabilities, and a card recognition feature using OCR technology.
+The system provides a flexible architecture for unified card queries across different game systems, filtering capabilities, and a bonus card recognition feature using OCR technology (for fun).
 
 ## Installation
 
@@ -21,13 +21,13 @@ cp .env.dist .env
 docker-compose up -d  # Starts MongoDB, text scanning API, and client
 
 # Run the server
-bun run app.ts
+bun run src/app.ts
 ```
 
 ## Architecture & Components
 
 ### Project Structure
-- `client/`: React-based frontend interface (accessible at https://cardnexus-test.rovercap.alexisvis.co/)
+- `client/`: React-based frontend interface (prompted and edited manually via claude) (accessible at https://cardnexus-test.rovercap.alexisvis.co/)
 - `src/`: Server-side application code
     - `domain/`: Business domain models and type definitions
     - `model/`: Database models and schema mappings
