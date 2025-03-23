@@ -34,7 +34,6 @@ export class CardScannerService {
 			}
 
 			const result = await response.json();
-			console.log(result)
 			return cardScanBockResponse.parse(result);
 		} catch (error) {
 			this.logger.error({

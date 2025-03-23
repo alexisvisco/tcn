@@ -15,6 +15,8 @@ ARG APP_API
 
 ENV VITE_APP_API=$APP_API
 
+RUN echo "debug env: $VITE_APP_API"
+
 # Skip TypeScript check and build directly with Vite
 RUN echo '#!/bin/sh\nbun vite build' > build.sh && chmod +x build.sh
 RUN TSC_COMPILE_ON_ERROR=true VITE_TSCONFIG_NOCHECK=true CI=false ./build.sh

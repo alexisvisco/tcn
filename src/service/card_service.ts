@@ -27,8 +27,6 @@ export class CardService {
 			.map(e => e.text)
 			.splice(0, 3)
 
-		console.log(maybeCardsTitle)
-
 		const scores = await this.cardRepository.findCardByNamesWithScore(maybeCardsTitle)
 		return cardScanResponse.parse({items: scores})
 	}

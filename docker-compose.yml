@@ -25,7 +25,7 @@ services:
       context: client
       dockerfile: Dockerfile
       args:
-        API_URL: http://localhost:8001
+        APP_API: http://localhost:8001
     ports:
       - "3000:80"
     restart: unless-stopped
