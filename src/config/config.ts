@@ -4,6 +4,9 @@ export let config = {
 		MONGO_URI: 'mongodb://localhost:27017',
 		DATABASE_NAME: 'cardnexus'
 	},
+	scanner: {
+		URL: 'http://localhost:8000/scan?simple=true'
+	},
 	http: {
 		PORT: 3000
 	},
@@ -18,4 +21,6 @@ export function parseEnvConfig() {
 
 	config.http.PORT = process.env.PORT ? parseInt(process.env.PORT) : config.http.PORT;
 	config.NODE_ENV = process.env.NODE_ENV || config.NODE_ENV;
+
+	config.scanner.URL = process.env.SCANNER_API_URL || config.scanner.URL;
 }

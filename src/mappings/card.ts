@@ -1,6 +1,7 @@
 import type {Card} from "../domain/card.ts";
 import type {cardSchema} from "../model/card.ts";
 import {CardType, lorcanaCard, magicTheGatheringCard} from "../domain/card.ts";
+import type {CardScanResponse} from "../domain/card_scan.js";
 
 export function cardDomainToCardSchema(card: Card): cardSchema {
 	switch (card.type) {

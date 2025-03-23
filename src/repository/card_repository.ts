@@ -8,9 +8,9 @@ import {
 } from "../domain/card";
 import {cardGameCollection, ICard} from "../model/card.ts";
 import {cardDomainToCardSchema, cardSchemaToCardDomain} from "../mappings/card.ts";
-import {undefined, z} from "zod";
 import type {Model, RootFilterQuery} from "mongoose";
 import {InvalidParameterError} from "../helper/http_error.js";
+import {cardScanResponse, CardScanResult} from "../domain/card_scan.js";
 
 export class CardRepository {
 	private collection: Model<ICard>;
@@ -25,6 +25,83 @@ export class CardRepository {
 		})
 
 		return result > 0;
+	}
+
+	async findCardByNamesWithScore(names: string[]): Promise<CardScanResult[]> {
+		if (!names || names.length === 0) {
+			return [];
+		}
+
+
+		// MongoDB only allows a single $text operator per query
+		// We need to run individual queries for each name and merge results
+		const allResults : (CardScanResult & { score: number })[] = [];
+
+		for (const name of names) {
+			const results = await this.collection.aggregate([
+				{
+					$match: {
+						$text: {
+							$search: name,
+							$caseSensitive: false
+						}
+					}
+				},
+				{
+					$addFields: {
+						score: {
+							$multiply: [
+								{ $meta: "textScore" },
+								100
+							]
+						}
+					}
+				},
+				{
+					$match: {
+						score: { $gt: 90 }
+					}
+				},
+				{
+					$project: {
+						_id: 0,
+						id: 1,
+						name: 1,
+						imageUrl: 1,
+						score: 1
+					}
+				}
+			]).exec();
+
+			allResults.push(...results);
+		}
+
+		// Deduplicate by keeping highest score for each card
+		const uniqueResults = Array.from(
+			allResults.reduce((map, item) => {
+				if (!map.has(item.id) || map.get(item.id).score < item.score) {
+					map.set(item.id, item);
+				}
+				return map;
+			}, new Map()).values()
+		) as (CardScanResult & { score: number })[];
+
+
+
+		// Sort by score and limit to top 5
+		return uniqueResults
+			.map(e => {
+				// boost when exact match
+				if (names.includes(e.name)) {
+					e.score += 100;
+				}
+
+				e._id = e.id.toString()
+
+				return e;
+			})
+			.sort((a, b) => b.score - a.score)
+			.slice(0, 5)
 	}
 
 	async bulkUpsertCards(cards: Card[]): Promise<void> {

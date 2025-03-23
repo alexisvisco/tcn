@@ -1,12 +1,15 @@
 import {canonicalLogger, getLogger} from "./helper/canonical_logger.ts";
 import {Hono} from "hono";
-import {onHttpError} from "./helper/http_error.ts";
+import {FileTooLargeError, onHttpError} from "./helper/http_error.ts";
 import pino from "pino";
 import type {CardService} from "./service/card_service.ts";
-import {CardListRequest, cardListRequest, cardListResponse} from "./domain/card.ts";
+import {CardListRequest, cardListRequest} from "./domain/card.ts";
 import {transformQueries} from "./helper/http_query_to_obj.ts";
 import {z} from "zod";
+import {bodyLimit} from 'hono/body-limit'
 import {cors} from "hono/cors";
+import type {CardScanRequest} from "./domain/card_scan.js";
+import {cardScanRequest} from "./domain/card_scan.js";
 
 export function newHTTPServer(cardService: CardService): Hono {
 	const srv = new Hono();
@@ -59,5 +62,30 @@ export function newHTTPServer(cardService: CardService): Hono {
 			return c.json(cards);
 		});
 
+	srv.post('/api/cards/scan',
+		bodyLimit({ // limit to 2mb
+			maxSize: 2 * 1024 * 1024,
+			onError: (c) => {
+				throw new FileTooLargeError('File too large')
+			},
+		} as any),
+		async (c) => {
+			const body = await c.req.parseBody()
+			const file = body['file']
+
+			let request: CardScanRequest | undefined
+			try {
+				request = cardScanRequest.parse({file})
+			} catch (error) {
+				c.status(400)
+				return c.json({
+					error: error instanceof z.ZodError ? error.format() : String(error)
+				});
+			}
+
+			const scanResult = await cardService.cardScan(request);
+
+			return c.json(scanResult);
+		});
 	return srv
 }

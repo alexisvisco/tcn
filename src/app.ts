@@ -7,6 +7,7 @@ import {CardImporterService} from "./service/card_importer_service.ts";
 import {CardService} from "./service/card_service.ts";
 import {runMigrations} from "./helper/mongodb_migrations.js";
 import {migrations} from "./migrations/migrations.js";
+import {CardScannerService} from "./service/card_scanner_service.js";
 
 
 parseEnvConfig()
@@ -15,7 +16,8 @@ await connectMongoDB(config)
 
 const cardRepository = new CardRepository()
 const cardImporterService = new CardImporterService(cardRepository)
-const cardService = new CardService(cardRepository)
+const cardScannerService = new CardScannerService(config.scanner.URL)
+const cardService = new CardService(cardRepository, cardScannerService)
 
 await runMigrations(config, migrations)
 

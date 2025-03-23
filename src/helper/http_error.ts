@@ -9,7 +9,8 @@ interface HTTPError {
 
 enum ErrorCode {
 	INTERNAL_SERVER_ERROR = HttpStatusCode.INTERNAL_SERVER_ERROR_500,
-	INVALID_PARAMETER_ERROR = HttpStatusCode.BAD_REQUEST_400
+	INVALID_PARAMETER_ERROR = HttpStatusCode.BAD_REQUEST_400,
+	FILE_TOO_LARGE_ERROR = HttpStatusCode.PAYLOAD_TOO_LARGE_413
 }
 
 interface ErrorCodeProperties {
@@ -18,7 +19,8 @@ interface ErrorCodeProperties {
 
 const errorCodeProperties : Record<ErrorCode, ErrorCodeProperties> = {
 	[ErrorCode.INTERNAL_SERVER_ERROR]: {msg: "Internal server error"},
-	[ErrorCode.INVALID_PARAMETER_ERROR]: {msg: "Invalid parameter"}
+	[ErrorCode.INVALID_PARAMETER_ERROR]: {msg: "Invalid parameter"},
+	[ErrorCode.FILE_TOO_LARGE_ERROR]: {msg: "File too large"}
 }
 
 export function onHttpError(error: Error, ctx: Context, requestId: string) {
@@ -39,5 +41,12 @@ export class InvalidParameterError extends Error {
 	constructor(message: string) {
 		super(message);
 		this.name = "InvalidParameterError";
+	}
+}
+
+export class FileTooLargeError extends Error {
+	constructor(message: string) {
+		super(message);
+		this.name = "FileTooLargeError";
 	}
 }

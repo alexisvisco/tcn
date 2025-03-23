@@ -79,7 +79,6 @@ export const cardFiltering = z.object({
 });
 
 export const cardListRequest = PaginationRequest.extend(cardFiltering.shape)
-
 export const cardListResponse = z.object({
 	items: z.array(card),
 	pagination: PaginationResponse
@@ -87,3 +86,4 @@ export const cardListResponse = z.object({
 
 export type CardListRequest = z.infer<typeof cardListRequest>;
 export type CardListResponse = z.infer<typeof cardListResponse>;
+

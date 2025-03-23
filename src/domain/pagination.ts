@@ -2,7 +2,7 @@ import {z} from "zod";
 
 export const PaginationRequest = z.object({
 	page: z.coerce.number().int().positive().default(1),
-	itemsPerPage: z.coerce.number().int().positive().default(10),
+	itemsPerPage: z.coerce.number().int().positive().max(50).default(10),
 });
 
 export const PaginationResponse = z.object({
