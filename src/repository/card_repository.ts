@@ -35,6 +35,7 @@ export class CardRepository {
 
 		// MongoDB only allows a single $text operator per query
 		// We need to run individual queries for each name and merge results
+		// optimization note: can be run in promise.all
 		const allResults : (CardScanResult & { score: number })[] = [];
 
 		for (const name of names) {
