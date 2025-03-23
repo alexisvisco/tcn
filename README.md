@@ -74,7 +74,7 @@ I designed the indexing strategy based on an understanding of the TCG domain's u
 
 For this example implementation, I've added indexes for name search and card type filtering, but in a production environment, I would add additional indexes based on actual query patterns and usage analytics.
 
-### Migration Framework
+### MongoDB Migration Framework
 
 Faced with a lack of reliable MongoDB migration tools in the Node.js ecosystem, I developed a lightweight migration helper. After evaluating existing tools like `ts-migrate-mongoose` and finding them unreliable, I created a custom solution that:
 
@@ -137,6 +137,14 @@ Provides card recognition from uploaded images:
 
 #### 3. GET /healthcheck
 Simple endpoint to verify server health.
+
+### Note on observability
+
+I added a little bit of observalibility via logging which IMO is the first step to observability.
+I am a fan of canonical logging and I have used it in this project. (https://stripe.com/blog/canonical-log-lines)
+
+TLDR: Canonical logging is a structured logging format that makes it easy to search. In the web server logs, each line is a request, and each field is a piece of information about that request that you can augment with additional context.
+
 
 ## OCR Implementation Details
 
