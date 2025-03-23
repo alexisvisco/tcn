@@ -1,6 +1,6 @@
 ### GET request to example server
 
-GET {{url}}/api/cards?attrInkCost[]=2&attrInkCost[]=3
+GET {{url}}/api/cards?attrInkCostRangeFrom=2&attrInkCostRangeTo=3
 
 ###
 POST {{url}}/api/cards/scan HTTP/1.1

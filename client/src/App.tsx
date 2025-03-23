@@ -87,14 +87,15 @@ type CardListResponse = z.infer<typeof CardListResponse>;
 interface CardFilterParams {
   query?: string;
   type?: CardType;
-  attrInkCost?: number[];
+  attrInkCostRangeFrom?: number;
+  attrInkCostRangeTo?: number;
   attrRarity?: string[];
   attrColor?: MagicTheGatheringColor[];
   page: number;
   itemsPerPage: number;
 }
 
-const API_BASE_URL = import.meta.env.VITE_APP_API || 'http://localhost:3001';
+const API_BASE_URL = import.meta.env.VITE_APP_API || 'http://localhost:8001';
 
 
 const fetchCards = async (params: CardFilterParams): Promise<CardListResponse> => {
@@ -103,10 +104,9 @@ const fetchCards = async (params: CardFilterParams): Promise<CardListResponse> =
   if (params.query) queryParams.append('query', params.query);
   if (params.type) queryParams.append('type', params.type);
 
-  if (params.attrInkCost && params.attrInkCost.length > 0) {
-    params.attrInkCost.forEach(cost =>
-      queryParams.append('attrInkCost[]', cost.toString())
-    );
+  if (params.attrInkCostRangeFrom && params.attrInkCostRangeTo) {
+    queryParams.append('attrInkCostRangeFrom', params.attrInkCostRangeFrom.toString());
+    queryParams.append('attrInkCostRangeTo', params.attrInkCostRangeTo.toString());
   }
 
   if (params.attrRarity && params.attrRarity.length > 0) {
@@ -139,7 +139,7 @@ const fetchCards = async (params: CardFilterParams): Promise<CardListResponse> =
 // Define action types as string literals
 const SEARCH_QUERY = 'SEARCH_QUERY';
 const SET_TYPE = 'SET_TYPE';
-const TOGGLE_INK_COST = 'TOGGLE_INK_COST';
+const SET_INK_COST_RANGE = 'SET_INK_COST_RANGE';
 const TOGGLE_RARITY = 'TOGGLE_RARITY';
 const TOGGLE_COLOR = 'TOGGLE_COLOR';
 const LOAD_MORE = 'LOAD_MORE';
@@ -157,9 +157,9 @@ interface SetTypeAction {
   payload: CardType | undefined;
 }
 
-interface ToggleInkCostAction {
-  type: typeof TOGGLE_INK_COST;
-  payload: number;
+interface SetInkCostRangeAction {
+  type: typeof SET_INK_COST_RANGE;
+  payload: [number, number];
 }
 
 interface ToggleRarityAction {
@@ -189,7 +189,7 @@ interface SetLoadingMoreAction {
 type FilterAction =
   | SearchQueryAction
   | SetTypeAction
-  | ToggleInkCostAction
+  | SetInkCostRangeAction
   | ToggleRarityAction
   | ToggleColorAction
   | LoadMoreAction
@@ -200,7 +200,8 @@ type FilterAction =
 interface FilterState {
   query: string;
   type: CardType | undefined;
-  attrInkCost: number[];
+  attrInkCostFrom: number | undefined;
+  attrInkCostTo: number | undefined;
   attrRarity: string[];
   attrColor: MagicTheGatheringColor[];
   page: number;
@@ -213,7 +214,8 @@ interface FilterState {
 const initialFilterState: FilterState = {
   query: '',
   type: undefined,
-  attrInkCost: [],
+  attrInkCostFrom: undefined,
+  attrInkCostTo: undefined,
   attrRarity: [],
   attrColor: [],
   page: 1,
@@ -236,19 +238,18 @@ function filterReducer(state: FilterState, action: FilterAction): FilterState {
       return {
         ...state,
         type: action.payload,
-        attrInkCost: [],
+        attrInkCostFrom: undefined,
+        attrInkCostTo: undefined,
         attrRarity: [],
         attrColor: [],
         page: 1,
         shouldRefetch: true
       };
-    case TOGGLE_INK_COST:
-      const newInkCosts = state.attrInkCost.includes(action.payload)
-        ? state.attrInkCost.filter(cost => cost !== action.payload)
-        : [...state.attrInkCost, action.payload];
+    case SET_INK_COST_RANGE:
       return {
         ...state,
-        attrInkCost: newInkCosts,
+        attrInkCostFrom: action.payload[0],
+        attrInkCostTo: action.payload[1],
         page: 1,
         shouldRefetch: true
       };
@@ -338,32 +339,7 @@ const Sidebar = ({
       </div>
 
       {/* Lorcana: Ink Cost Filter */}
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-2">Lorcana Ink Cost</h3>
-        <div className="grid grid-cols-5 gap-2">
-          {Array.from({ length: 11 }, (_, i) => i).map(cost => (
-            <button
-              key={cost}
-              className={`p-2 rounded text-center font-bold ${
-                state.attrInkCost?.includes(cost)
-                  ? 'bg-purple-600'
-                  : 'bg-gray-700 hover:bg-gray-600'
-              } ${state.type !== undefined && state.type !== CardType.Lorcana ? 'opacity-50' : ''}`}
-              onClick={() => {
-                if (state.type === undefined || state.type === CardType.Lorcana) {
-                  dispatch({ type: TOGGLE_INK_COST, payload: cost } as ToggleInkCostAction);
-                }
-              }}
-              disabled={state.type !== undefined && state.type !== CardType.Lorcana}
-            >
-              {cost}
-            </button>
-          ))}
-        </div>
-        {state.type !== undefined && state.type !== CardType.Lorcana && (
-          <p className="text-xs text-gray-400 mt-1">Select Lorcana to use this filter</p>
-        )}
-      </div>
+      <InkCostRange state={state} dispatch={dispatch} />
 
       {/* Lorcana: Rarity Filter */}
       <div className="mb-6">
@@ -578,7 +554,8 @@ const CardCollectionApp = () => {
   const filterParams = {
     query: state.query,
     type: state.type,
-    attrInkCost: state.attrInkCost,
+    attrInkCostRangeFrom: state.attrInkCostFrom,
+    attrInkCostRangeTo: state.attrInkCostTo,
     attrRarity: state.attrRarity,
     attrColor: state.attrColor,
     page: state.page,
@@ -752,9 +729,9 @@ const CardCollectionApp = () => {
                 "{state.query}"
               </span>
             )}
-            {state.attrInkCost && state.attrInkCost.length > 0 && (
+            {state.attrInkCostFrom && state.attrInkCostTo && (
               <span className="bg-yellow-600 text-white text-xs px-3 py-1 rounded-full">
-                Ink: {state.attrInkCost.join(', ')}
+                Ink Cost : {state.attrInkCostFrom} - {state.attrInkCostTo}
               </span>
             )}
             {state.attrRarity && state.attrRarity.length > 0 && (
@@ -773,6 +750,72 @@ const CardCollectionApp = () => {
         {/* Card Grid */}
         {renderCardGrid()}
       </div>
+    </div>
+  );
+};
+
+const InkCostRange = ({ state, dispatch }) => {
+  const [min, setMin] = useState(state.attrInkCostFrom ?? 0);
+  const [max, setMax] = useState(state.attrInkCostTo ?? 10);
+
+  const isDisabled = state.type !== undefined && state.type !== CardType.Lorcana;
+
+  const handleMinChange = (e) => {
+    const value = parseInt(e.target.value);
+    if (!isNaN(value) && value >= 0 && value <= 10) {
+      setMin(value);
+      if (value <= max) {
+        dispatch({
+          type: 'SET_INK_COST_RANGE',
+          payload: [value, max]
+        });
+      }
+    }
+  };
+
+  const handleMaxChange = (e) => {
+    const value = parseInt(e.target.value);
+    if (!isNaN(value) && value >= 0 && value <= 10) {
+      setMax(value);
+      if (value >= min) {
+        dispatch({
+          type: 'SET_INK_COST_RANGE',
+          payload: [min, value]
+        });
+      }
+    }
+  };
+
+  return (
+    <div className="mb-6">
+      <h3 className="text-lg font-semibold mb-2">Lorcana Ink Cost</h3>
+      <div className="flex items-center gap-3">
+        <input
+          type="number"
+          min="0"
+          max="10"
+          value={+min}
+          onChange={handleMinChange}
+          disabled={isDisabled}
+          className={`w-16 p-2 rounded bg-gray-700 text-white ${isDisabled ? 'opacity-50' : ''}`}
+        />
+        <span className="text-gray-400">to</span>
+        <input
+          type="number"
+          min="0"
+          max="10"
+          value={+max}
+          onChange={handleMaxChange}
+          disabled={isDisabled}
+          className={`w-16 p-2 rounded bg-gray-700 text-white ${isDisabled ? 'opacity-50' : ''}`}
+        />
+      </div>
+      {isDisabled && (
+        <p className="text-xs text-gray-400 mt-1">Select Lorcana to use this filter</p>
+      )}
+      {min > max && !isDisabled && (
+        <p className="text-xs text-red-400 mt-1">Min value must be less than or equal to max</p>
+      )}
     </div>
   );
 };

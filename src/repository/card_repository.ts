@@ -122,9 +122,7 @@ export class CardRepository {
 
 	async findCards(request: CardListRequest): Promise<CardListResponse> {
 
-		// Construire la requête MongoDB
 		const query: RootFilterQuery<ICard> = {};
-
 
 		if (request?.type) {
 			query.type = request.type;
@@ -147,8 +145,16 @@ export class CardRepository {
 			query['$text'] = {$search: request.query};
 		}
 
-		if (request.attrInkCost) {
-			query['attributes.inkCost'] = request.attrInkCost;
+
+		if (request.attrInkCostRangeFrom || request.attrInkCostRangeTo) {
+			if (request.attrInkCostRangeFrom > request.attrInkCostRangeTo) {
+				throw new InvalidParameterError('Invalid ink cost range');
+			}
+
+			query['attributes.inkCost'] = {
+				$gte: request.attrInkCostRangeFrom || 0,
+				$lte: request.attrInkCostRangeTo || 10
+			};
 		}
 
 		if (request.attrColor) {

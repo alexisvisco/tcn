@@ -94,12 +94,12 @@ Retrieves cards with flexible filtering capabilities:
 
 - `query`: Text search across card names (uses MongoDB text index)
 - `page` & `itemsPerPage`: Pagination controls
-- `attrInkCost[]`: Filter by ink cost (Lorcana)
+- `attrInkCostRangeFrom` & `attrInkCostRangeTo`: Filter by ink cost (Lorcana)
 - `attrColor[]`: Filter by color (Magic: The Gathering)
 - `attrRarity[]`: Filter by rarity (works across both games)
 - `type`: Filter by game type
 
-Response example:
+Response example for `GET {{url}}/api/cards?attrInkCostRangeFrom=2&attrInkCostRangeTo=3`
 ```json
 {
   "items": [

@@ -70,7 +70,10 @@ export const cardFilteringMTG = z.object({
 export const cardFiltering = z.object({
 	query: z.string().optional(),
 	type: z.nativeEnum(CardType).optional(),
-	attrInkCost: z.coerce.number().array().optional(),
+
+	attrInkCostRangeFrom: z.coerce.number().min(0).optional(),
+	attrInkCostRangeTo: z.coerce.number().max(10).optional(),
+
 	attrColor: z.nativeEnum(MagicTheGatheringColor).array().optional(),
 	attrRarity: z.union([
 		z.nativeEnum(LorcanaRarity),
