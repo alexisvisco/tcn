@@ -37,7 +37,7 @@ export class CardImporterService {
 	}
 
 	async importLorcana(filePath: string): Promise<{ imported: number; rejected: number }> {
-		if (await this.cardRepository.hasCardsInType(CardType.Lorcana)) {
+		if (await this.cardRepository.hasType(CardType.Lorcana)) {
 			this.logger.info("Lorcana cards already imported, skipping import");
 			return {imported: 0, rejected: 0};
 		}
@@ -71,7 +71,7 @@ export class CardImporterService {
 	}
 
 	async importMTG(filePath: string): Promise<{ imported: number; rejected: number }> {
-		if (await this.cardRepository.hasCardsInType(CardType.MagicTheGathering)) {
+		if (await this.cardRepository.hasType(CardType.MagicTheGathering)) {
 			this.logger.info("Magic The Gathering cards already imported, skipping import");
 			return {imported: 0, rejected: 0};
 		}
@@ -148,7 +148,7 @@ export class CardImporterService {
 
 				try {
 					if (cardsToUpsert.length > 0) {
-						await this.cardRepository.bulkUpsertCards(cardsToUpsert);
+						await this.cardRepository.bulkUpsert(cardsToUpsert);
 						imported += cardsToUpsert.length;
 						this.logger.info({batchSize: cardsToUpsert.length}, "batch imported");
 					}

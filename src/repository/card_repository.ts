@@ -19,7 +19,7 @@ export class CardRepository {
 		this.collection = cardGameCollection();
 	}
 
-	async hasCardsInType(type: CardType): Promise<boolean> {
+	async hasType(type: CardType): Promise<boolean> {
 		const result = await this.collection.countDocuments({
 			type: type
 		})
@@ -27,7 +27,7 @@ export class CardRepository {
 		return result > 0;
 	}
 
-	async findCardByNamesWithScore(names: string[]): Promise<CardScanResult[]> {
+	async findByNamesWithScore(names: string[]): Promise<CardScanResult[]> {
 		if (!names || names.length === 0) {
 			return [];
 		}
@@ -105,7 +105,7 @@ export class CardRepository {
 			.slice(0, 5)
 	}
 
-	async bulkUpsertCards(cards: Card[]): Promise<void> {
+	async bulkUpsert(cards: Card[]): Promise<void> {
 		if (!cards.length) {
 			return
 		}
@@ -121,7 +121,7 @@ export class CardRepository {
 		await this.collection.bulkWrite(bulkOps);
 	}
 
-	async findCards(request: CardListRequest): Promise<CardListResponse> {
+	async search(request: CardListRequest): Promise<CardListResponse> {
 
 		const query: RootFilterQuery<ICard> = {};
 

@@ -57,7 +57,7 @@ export function newHTTPServer(cardService: CardService): Hono {
 				});
 			}
 
-			const cards = await cardService.cardList(request);
+			const cards = await cardService.list(request);
 
 			return c.json(cards);
 		});
@@ -83,7 +83,7 @@ export function newHTTPServer(cardService: CardService): Hono {
 				});
 			}
 
-			const scanResult = await cardService.cardScan(request);
+			const scanResult = await cardService.scan(request);
 
 			return c.json(scanResult);
 		});

@@ -15,11 +15,11 @@ export class CardService {
 		this.cardScannerService = cardScanner;
 	}
 
-	async cardList(request: CardListRequest): Promise<CardListResponse> {
-		return await this.cardRepository.findCards(request)
+	async list(request: CardListRequest): Promise<CardListResponse> {
+		return await this.cardRepository.search(request)
 	}
 
-	async cardScan(request: CardScanRequest): Promise<CardScanResponse> {
+	async scan(request: CardScanRequest): Promise<CardScanResponse> {
 		const results = await this.cardScannerService.scan(<File>request.file)
 
 		const maybeCardsTitle = results.blocks
@@ -27,7 +27,7 @@ export class CardService {
 			.map(e => e.text)
 			.splice(0, 3)
 
-		const scores = await this.cardRepository.findCardByNamesWithScore(maybeCardsTitle)
+		const scores = await this.cardRepository.findByNamesWithScore(maybeCardsTitle)
 		return cardScanResponse.parse({items: scores})
 	}
 }
