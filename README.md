@@ -124,7 +124,7 @@ Response example for `GET {{url}}/api/cards?attrInkCostRangeFrom=2&attrInkCostRa
 }
 ```
 
-#### 2. POST /api/cardscan
+#### 2. POST /api/cards/scan
 Provides card recognition from uploaded images:
 
 1. Uses the doctr OCR engine to extract text from card images
