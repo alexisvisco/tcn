@@ -1,4 +1,4 @@
-### GET request to example server
+### GET request to search cards
 
 GET {{url}}/api/cards?attrInkCostRangeFrom=2&attrInkCostRangeTo=3
 
